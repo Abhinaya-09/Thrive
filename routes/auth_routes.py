@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from bson import ObjectId
+from app.utils.email_utils import send_welcome_email  
+import traceback, threading
 from datetime import datetime
 import traceback
 
@@ -89,7 +91,10 @@ def register():
         
         result = request.current_app.db.users.insert_one(user_data)
         print(f"✅ User created with ID: {result.inserted_id}")
-        
+
+        # Send notification (welcome email or onboarding complete)
+        threading.Thread(target=send_welcome_email, args=(data['email'], data['fullName'])).start()
+     
         return jsonify({
             "message": "User registered successfully",
             "user": {
